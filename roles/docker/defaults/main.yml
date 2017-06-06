@@ -3,5 +3,17 @@ docker_package_name: docker-engine
 ansible_distribution_release: wily
 docker_version: 1.10.3-0~{{ansible_distribution_release}}
 dockerpy_version: 1.8.1
+
+#add oher physical volume
+docker_disks_options_enabled: false
 docker_disks: /dev/sdb
 
+
+# Override default systemd ExecStart
+# More info at https://docs.docker.com/engine/admin/systemd/
+docker_override_options: "{{proxy_env_enabled}}"
+docker_override_path: /etc/systemd/system/docker.service.d
+docker_daemon_options: "-H fd://"
+docker_override_http_proxy: "{{ proxy_env['http_proxy'] }}"
+docker_override_https_proxy: "{{ proxy_env['https_proxy']}}"
+docker_override_no_proxy: "{{ proxy_env['no_proxy'] }}"
