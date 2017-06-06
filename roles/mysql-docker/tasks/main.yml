@@ -1,10 +1,11 @@
 ---
 - name: Create a mysql docker container
+  become: yes
   docker:
       name: mysql
       image: mysql:{{ mysql_version }}
       restart_policy: always
-      state: reloaded
+      state: started
       volumes:
       - /var/lib/mysql:/var/lib/mysql
       ports:
