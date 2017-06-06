@@ -4,14 +4,15 @@
   gather_facts: no
   roles:
   - {role: create-rancher-project, tags: create-rancher-project}
+
 - hosts: "{{ NAME_PROJECT }}"
   gather_facts: no
   roles:
-  - add-host-to-environment
+  - {role: add-host-to-environment, tags: add-host-to-environment}
 
 - hosts: rancher-masters
   gather_facts: no
   roles:
-  - {role: install-stack, STACK_NAME: janitor, tags: install-stack}
-  - {role: install-stack, STACK_NAME: elk, tags: install-stack}
-  - {role: install-stack, STACK_NAME: prometheus, tags: install-stack}
+  - {role: install-stack, STACK_NAME: janitor, tags: install-stack, when: common_stack_enabled}
+  - {role: install-stack, STACK_NAME: elk, tags: install-stack, when: common_stack_enabled}
+  - {role: install-stack, STACK_NAME: prometheus, tags: install-stack, when: common_stack_enabled}
