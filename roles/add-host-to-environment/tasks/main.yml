@@ -6,7 +6,8 @@
        status_code=201
        user={{ RANCHER_API_KEY_ACCOUNT_TOKEN }}
        password={{ RANCHER_API_KEY_ACCOUNT_SECRET }}
-       url="http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/registrationtokens?projectId={{ PROJECT_ID }}" return_content=yes
+       url="http://localhost:{{ RANCHER_MASTER_PORT }}/v1/registrationtokens?projectId={{ PROJECT_ID }}" return_content=yes
+  delegate_to: "{{ groups['rancher-masters'][0] }}"
   register: rancher_token_url
 
 - name: Return the registration URL of Rancher server
@@ -15,12 +16,13 @@
        user={{ RANCHER_API_KEY_ACCOUNT_TOKEN }}
        password={{ RANCHER_API_KEY_ACCOUNT_SECRET }}
        url={{ rancher_token_url.json['links']['self'] }} return_content=yes
+  delegate_to: "{{ groups['rancher-masters'][0] }}"
   register: rancher_token
 
-- name: Register host into the master
+- name: Register host with role tools into the master
   docker:
       name: rancherAgent
-      image: rancher/agent:v1.0.2
+      image: rancher/agent:{{ rancher_agent_version }}
       state: started
       privileged: true
       volumes:
@@ -32,14 +34,41 @@
       ports:
           - "8080:8080"
   become: yes
-  when: inventory_hostname == groups.{{ NAME_PROJECT }}[0]
+  when:
+    - inventory_hostname == groups.{{ NAME_PROJECT }}[0]
+    - not proxy_env_enabled
+
+- name: Register host with role tools into the master with proxy configuration
+  docker:
+      name: rancherAgent
+      image: rancher/agent:{{ rancher_agent_version }}
+      state: started
+      privileged: true
+      volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/rancher:/var/lib/rancher
+      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
+      env:
+          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}&role=tools"
+          http_proxy="{{ proxy_env['http_proxy'] }}"
+          https_proxy="{{ proxy_env['https_proxy']}}"
+          no_proxy="{{ proxy_env['no_proxy'] }}"
+          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
+          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
+          NO_PROXY="{{ proxy_env['no_proxy'] }}"
+      ports:
+          - "8080:8080"
+  become: yes
+  when:
+    - inventory_hostname == groups.{{ NAME_PROJECT }}[0]
+    - proxy_env_enabled
 
 - pause: seconds=15
 
-- name: Register host into the master
+- name: Register all other host into the master
   docker:
       name: rancherAgent
-      image: rancher/agent:v1.0.2
+      image: rancher/agent:latest
       state: started
       privileged: true
       volumes:
@@ -51,4 +80,31 @@
       ports:
           - "8080:8080"
   become: yes
-  when: inventory_hostname != groups.{{ NAME_PROJECT }}[0]
+  when:
+    - inventory_hostname != groups.{{ NAME_PROJECT }}[0]
+    - not proxy_env_enabled
+
+- name: Register all other host into the master with proxy configuration
+  docker:
+      name: rancherAgent
+      image: rancher/agent:latest
+      state: started
+      privileged: true
+      volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/rancher:/var/lib/rancher
+      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
+      env:
+          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}"
+          http_proxy="{{ proxy_env['http_proxy'] }}"
+          https_proxy="{{ proxy_env['https_proxy']}}"
+          no_proxy="{{ proxy_env['no_proxy'] }}"
+          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
+          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
+          NO_PROXY="{{ proxy_env['no_proxy'] }}"
+      ports:
+          - "8080:8080"
+  become: yes
+  when:
+    - inventory_hostname != groups.{{ NAME_PROJECT }}[0]
+    - proxy_env_enabled
