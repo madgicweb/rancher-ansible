@@ -13,7 +13,7 @@
     body: ' {"description":"{{ NAME_PROJECT }}", "name":"{{ NAME_PROJECT }}", "allowSystemRole":false, "members":[], "swarm":false, "kubernetes":false, "mesos":false, "virtualMachine":false, "publicDns":false, "servicesPortRange":null}'
     HEADER_Accept: "application/json"
     HEADER_Content-Type: "application/json"
-    url: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/projects
+    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/projects
   register: create_project
   when: project_file.stat.exists == False
 
@@ -31,7 +31,7 @@
     body: ' {"accountId":"{{ PROJECT_ID }}", "name":"{{ NAME_PROJECT}}_key"}'
     HEADER_Accept: "application/json"
     HEADER_Content-Type: "application/json"
-    url: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/apikeys
+    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/apikeys
   register: api_key
   when: project_file.stat.exists == False
 
