@@ -4,4 +4,5 @@ rancher_version: v1.6.0
 rancher_compose_version: v0.12.5
 rancher_agent_version: v1.0.2
 
-NAME_PROJECT: "default"
+#Default projet Name
+NAME_PROJECT: "MyFirstProject"

@@ -9,6 +9,3 @@ proxy_env:
 
 #Enable installation of common stack to tools node (Elk, Prometheus, Janitor and load balancer configuration)
 common_stack_enabled: true
-
-#Default projet Name
-NAME_PROJECT: "MyFirstProject"
