@@ -36,32 +36,32 @@
   become: yes
   when:
     - inventory_hostname == groups.{{ NAME_PROJECT }}[0]
-    - not proxy_env_enabled
+#    - not proxy_env_enabled
 
-- name: Register host with role tools into the master with proxy configuration
-  docker:
-      name: rancherAgent
-      image: rancher/agent:{{ rancher_agent_version }}
-      state: started
-      privileged: true
-      volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/rancher:/var/lib/rancher
-      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
-      env:
-          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}&role=tools"
-          http_proxy="{{ proxy_env['http_proxy'] }}"
-          https_proxy="{{ proxy_env['https_proxy']}}"
-          no_proxy="{{ proxy_env['no_proxy'] }}"
-          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
-          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
-          NO_PROXY="{{ proxy_env['no_proxy'] }}"
-      ports:
-          - "8080:8080"
-  become: yes
-  when:
-    - inventory_hostname == groups.{{ NAME_PROJECT }}[0]
-    - proxy_env_enabled
+#- name: Register host with role tools into the master with proxy configuration
+#  docker:
+#      name: rancherAgent
+#      image: rancher/agent:{{ rancher_agent_version }}
+#      state: started
+#      privileged: true
+#      volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/lib/rancher:/var/lib/rancher
+#      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
+#      env:
+#          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}&role=tools"
+#          http_proxy="{{ proxy_env['http_proxy'] }}"
+#          https_proxy="{{ proxy_env['https_proxy']}}"
+#          no_proxy="{{ proxy_env['no_proxy'] }}"
+#          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
+#          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
+#          NO_PROXY="{{ proxy_env['no_proxy'] }}"
+#      ports:
+#          - "8080:8080"
+#  become: yes
+#  when:
+#    - inventory_hostname == groups.{{ NAME_PROJECT }}[0]
+#    - proxy_env_enabled
 
 - pause: seconds=15
 
@@ -82,29 +82,29 @@
   become: yes
   when:
     - inventory_hostname != groups.{{ NAME_PROJECT }}[0]
-    - not proxy_env_enabled
+#    - not proxy_env_enabled
 
-- name: Register all other host into the master with proxy configuration
-  docker:
-      name: rancherAgent
-      image: rancher/agent:latest
-      state: started
-      privileged: true
-      volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/rancher:/var/lib/rancher
-      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
-      env:
-          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}"
-          http_proxy="{{ proxy_env['http_proxy'] }}"
-          https_proxy="{{ proxy_env['https_proxy']}}"
-          no_proxy="{{ proxy_env['no_proxy'] }}"
-          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
-          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
-          NO_PROXY="{{ proxy_env['no_proxy'] }}"
-      ports:
-          - "8080:8080"
-  become: yes
-  when:
-    - inventory_hostname != groups.{{ NAME_PROJECT }}[0]
-    - proxy_env_enabled
+#- name: Register all other host into the master with proxy configuration
+#  docker:
+#      name: rancherAgent
+#      image: rancher/agent:latest
+#      state: started
+#      privileged: true
+#      volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/lib/rancher:/var/lib/rancher
+#      command: http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }}/v1/scripts/{{ (rancher_token.content|from_json)['token'] }}
+#      env:
+#          CATTLE_HOST_LABELS="project={{NAME_PROJECT}}"
+#          http_proxy="{{ proxy_env['http_proxy'] }}"
+#          https_proxy="{{ proxy_env['https_proxy']}}"
+#          no_proxy="{{ proxy_env['no_proxy'] }}"
+#          HTTP_PROXY="{{ proxy_env['http_proxy'] }}"
+#          HTTPS_PROXY="{{ proxy_env['https_proxy']}}"
+#          NO_PROXY="{{ proxy_env['no_proxy'] }}"
+#      ports:
+#          - "8080:8080"
+#  become: yes
+#  when:
+#    - inventory_hostname != groups.{{ NAME_PROJECT }}[0]
+#    - proxy_env_enabled
