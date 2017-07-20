@@ -1,0 +1,45 @@
+---
+
+## In environnement variable /etc/environment
+- name: Print environment_config dictionnary
+  debug: msg=" Key {{ item.key }} is {{ item.value.value }} "
+  with_dict: "{{ environment_config }}"
+
+#- name: Remove previous values
+#  become: yes
+#  lineinfile: >
+#    dest=/etc/environment
+#    regexp='^{{ item.key }}'
+#    state=absent
+#  with_dict: "{{ environment_config }}"
+#  tags:
+#    - proxy
+#    - environment
+
+- name: Configuring environment
+  become: yes
+  lineinfile: >
+    dest=/etc/environment
+    line='{{ item.key }}="{{ item.value.value }}"'
+  with_dict: "{{environment_config}}"
+  tags:
+    - proxy
+    - environment
+  register: environment_system
+
+- name: Reboot machine
+  shell: sleep 2 && /sbin/shutdown -r now
+  async: 1
+  poll: 0
+  when: environment_system.changed
+
+- name: Wait for machine to come back online
+  become: no
+  local_action: wait_for
+  args:
+    host: "{{ inventory_hostname }}"
+    port: 22
+    state: started
+    timeout: 300
+    delay: 30
+  when: environment_system.changed

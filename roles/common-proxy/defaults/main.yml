@@ -1,0 +1,25 @@
+---
+
+# environment_config:
+#   - { name: LC_ALL, value: en_US.UTF-8 }
+#
+#environment_config:
+  #- { name: 'HTTP_PROXY', value: 'toto' }
+  #- { name: HTTPS_PROXY, value: "{{ proxy_env['https_proxy'] }}" }
+  #- { name: NO_PROXY, value: "{{ proxy_env['no_proxy'] }}" }
+  #- { name: FTP_PROXY, value: "{{ proxy_env['http_proxy'] }}" }
+
+
+environment_config:
+  HTTP_PROXY:
+    value:  "{{ proxy_env['http_proxy'] }}"
+  HTTPS_PROXY:
+    value:  "{{ proxy_env['https_proxy'] }}"
+  NO_PROXY:
+    value:  "{{ proxy_env['no_proxy'] }}"
+  http_proxy:
+    value:  "{{ proxy_env['http_proxy'] }}"
+  https_proxy:
+    value:  "{{ proxy_env['https_proxy'] }}"
+  no_proxy:
+    value:  "{{ proxy_env['no_proxy'] }}"
