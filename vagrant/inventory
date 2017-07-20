@@ -1,9 +1,0 @@
-[rancher-masters]
-ranchermaster.localdomain
-
-[mysql]
-ranchermaster.localdomain
-
-[MyFirstProject]
-ranchernode1.localdomain
-ranchernode2.localdomain
