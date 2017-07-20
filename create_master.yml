@@ -78,6 +78,7 @@
     tags: apikey
 
   - name: Add Api KEY ACCOUNT
+    become: yes
     uri:
       method: POST
       status_code: 201
@@ -110,6 +111,7 @@
 
 
   - name: Enable access control !
+    become: yes
     uri:
      method: POST
      status_code: 201
@@ -121,3 +123,5 @@
      body: ' {"accessMode":"unrestricted", "enabled":true, "name":"{{DEVOPS_LOGIN}}", "password":"{{DEVOPS_PASSWORD}}", "username":"{{DEVOPS_LOGIN}}"}'
     when: apikey_file.stat.exists == False
     tags: apikey
+
+  - debug: msg=" Installation succesfully. Connect to http://{{ RANCHER_MASTER_URL }}:{{ RANCHER_MASTER_PORT }} "
