@@ -1,5 +1,5 @@
 ---
-#./ansible-playbook_wrapper create_project.yml -K -e "NAME_PROJECT=myproject"
+#./ansible-playbook create_project.yml -i env/inventory -e "NAME_PROJECT=myproject" -e "TYPE_PROJECT=cattle"
 - hosts: rancher-masters
   gather_facts: no
   roles:
@@ -9,10 +9,3 @@
   gather_facts: no
   roles:
   - {role: add-host-to-environment, tags: add-host-to-environment}
-
-- hosts: rancher-masters
-  gather_facts: no
-  roles:
-  - {role: install-stack, STACK_NAME: janitor, tags: install-stack, when: common_stack_enabled}
-  - {role: install-stack, STACK_NAME: elk, tags: install-stack, when: common_stack_enabled}
-  - {role: install-stack, STACK_NAME: prometheus, tags: install-stack, when: common_stack_enabled}
