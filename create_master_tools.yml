@@ -1,0 +1,24 @@
+---
+#./ansible-playbook_wrapper create_project.yml -K -e "NAME_PROJECT=myproject"
+- hosts: rancher-masters
+  gather_facts: no
+  vars:
+    NAME_PROJECT: "tools"
+  roles:
+  - {role: create-rancher-project, tags: create-rancher-project}
+
+- hosts: "tools"
+  gather_facts: no
+  vars:
+    NAME_PROJECT: "tools"
+  roles:
+  - {role: add-host-to-environment, tags: add-host-to-environment}
+
+- hosts: rancher-masters
+  gather_facts: no
+  vars:
+    NAME_PROJECT: "tools"
+  roles:
+  - {role: install-stack, STACK_NAME: janitor, tags: install-stack, when: common_stack_enabled}
+  #- {role: install-stack, STACK_NAME: elk, tags: install-stack, when: common_stack_enabled}
+  - {role: install-stack, STACK_NAME: prometheus, tags: install-stack, when: common_stack_enabled}
