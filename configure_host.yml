@@ -3,19 +3,32 @@
 #second time ./ansible-playbook_wrapper configure_host.yml -K
 
 - hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+  - debug:
+      msg: "{{ proxy_env }}"
+  - name: Set init env
+    raw:  echo "HTTP_PROXY=\"{{ proxy_env['http_proxy'] }}\"" >> /etc/environment | echo "HTTPS_PROXY=\"{{ proxy_env['https_proxy'] }}\"" >> /etc/environment | echo "http_proxy=\"{{ proxy_env['http_proxy'] }}\"" >> /etc/environment | echo "https_proxy=\"{{ proxy_env['https_proxy'] }}\"" >> /etc/environment
+    when: proxy_env_enabled
+
+- hosts: all
+  become: yes
   gather_facts: no
   pre_tasks:
   # required to execute some ansible modules this must be executed with gather_facts: no since it also requires python
   - name: Install python
     raw:  apt-get install -y python-simplejson python-pip python-httplib2
-    become: yes
+
   #roles:
   #- configure-ops-accounts
 
 - hosts: all
   gather_facts: no
   roles:
-  - configure-hostname
+  - { role: common-proxy, when: proxy_env_enabled, tags: proxy }
+  #- { role: common-ubuntu, tags: config }
+  #- configure-hostname
   - docker
   #- configure-ssh
   post_tasks:
