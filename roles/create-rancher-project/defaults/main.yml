@@ -1,2 +1,4 @@
 ---
 # defaults file for create-rancher-project
+TYPE_PROJECT: "cattle"
+NAME_PROJECT: "tools"

@@ -1,0 +1,13 @@
+---
+- name: Create Project mesos type
+  uri:
+    method: POST
+    status_code: 201
+    user: "{{ RANCHER_API_KEY_ACCOUNT_TOKEN }}"
+    password: "{{ RANCHER_API_KEY_ACCOUNT_SECRET }}"
+    body: ' {"description":"{{ NAME_PROJECT }}", "name":"{{ NAME_PROJECT }}", "allowSystemRole":false, "members":[], "swarm":false, "kubernetes":false, "mesos":true, "virtualMachine":false, "publicDns":false, "servicesPortRange":null}'
+    HEADER_Accept: "application/json"
+    HEADER_Content-Type: "application/json"
+    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/projects
+  register: create_project
+  when: project_file.stat.exists == False

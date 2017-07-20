@@ -4,18 +4,14 @@
   register: project_file
   delegate_to: localhost
 
-- name: Create Project
-  uri:
-    method: POST
-    status_code: 201
-    user: "{{ RANCHER_API_KEY_ACCOUNT_TOKEN }}"
-    password: "{{ RANCHER_API_KEY_ACCOUNT_SECRET }}"
-    body: ' {"description":"{{ NAME_PROJECT }}", "name":"{{ NAME_PROJECT }}", "allowSystemRole":false, "members":[], "swarm":false, "kubernetes":false, "mesos":false, "virtualMachine":false, "publicDns":false, "servicesPortRange":null}'
-    HEADER_Accept: "application/json"
-    HEADER_Content-Type: "application/json"
-    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/projects
-  register: create_project
-  when: project_file.stat.exists == False
+- include: project_cattle.yml
+  when: TYPE_PROJECT == 'cattle'
+
+- include: project_kubernetes.yml
+  when: TYPE_PROJECT == 'kubernetes'
+
+- include: project_mesos.yml
+  when: TYPE_PROJECT == 'mesos'
 
 - name: Register project id
   set_fact:
