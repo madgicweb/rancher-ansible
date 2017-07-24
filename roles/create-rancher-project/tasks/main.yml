@@ -13,11 +13,6 @@
 - include: project_mesos.yml
   when: TYPE_PROJECT == 'mesos'
 
-- name: Register project id
-  set_fact:
-    PROJECT_ID: "{{ create_project.json['id'] }}"
-  when: project_file.stat.exists == False
-
 - name: Create API KEY
   uri:
     method: POST

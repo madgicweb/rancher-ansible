@@ -5,9 +5,18 @@
     status_code: 201
     user: "{{ RANCHER_API_KEY_ACCOUNT_TOKEN }}"
     password: "{{ RANCHER_API_KEY_ACCOUNT_SECRET }}"
-    body: ' {"description":"{{ NAME_PROJECT }}", "name":"{{ NAME_PROJECT }}", "allowSystemRole":false, "members":[], "swarm":false, "kubernetes":true, "mesos":false, "virtualMachine":false, "publicDns":false, "servicesPortRange":null}'
+    body: ' {"allowSystemRole":false,"virtualMachine":false,"type":"project","name":"{{ NAME_PROJECT }}","description":"{{ NAME_PROJECT }}","projectTemplateId":"1pt2","projectMembers":[],"created":null,"healthState":null,"kind":null,"removeTime":null,"removed":null,"uuid":null,"version":null,"hostRemoveDelaySeconds":null,"members":[]} '
     HEADER_Accept: "application/json"
     HEADER_Content-Type: "application/json"
-    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/projects
+    url: http://localhost:{{ RANCHER_MASTER_PORT }}/v2-beta/project
   register: create_project
+  when: project_file.stat.exists == False
+
+- debug:
+    var: create_project
+    verbosity: 2
+
+- name: Register project id
+  set_fact:
+    PROJECT_ID: "{{ create_project.json['id'] }}"
   when: project_file.stat.exists == False

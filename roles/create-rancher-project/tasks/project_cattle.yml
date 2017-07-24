@@ -11,3 +11,12 @@
     url: http://localhost:{{ RANCHER_MASTER_PORT }}/v1/projects
   register: create_project
   when: project_file.stat.exists == False
+
+- debug:
+    var: create_project
+    verbosity: 2
+
+- name: Register project id
+  set_fact:
+    PROJECT_ID: "{{ create_project.json['id'] }}"
+  when: project_file.stat.exists == False
