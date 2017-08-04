@@ -4,6 +4,8 @@ ranchermaster.localdomain
 [mysql]
 ranchermaster.localdomain
 
-[MyFirstProject]
+[tools]
 ranchernode1.localdomain
+
+[MyFirstProject]
 ranchernode2.localdomain

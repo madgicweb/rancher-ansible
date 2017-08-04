@@ -8,4 +8,4 @@ proxy_env:
   no_proxy: "{{ lookup('env', 'no_proxy') }}"
 
 #Enable installation of common stack to tools node (Elk, Prometheus, Janitor and load balancer configuration)
-common_stack_enabled: true
+common_stack_enabled: false
