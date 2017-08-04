@@ -1,7 +1,7 @@
 ---
 docker_package_name: docker-engine
 ansible_distribution_release: wily
-docker_version: 1.10.3-0~{{ansible_distribution_release}}
+docker_version: 1.12.6-0~ubuntu-{{ansible_distribution_release}}
 dockerpy_version: 1.8.1
 
 #add oher physical volume
