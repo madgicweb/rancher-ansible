@@ -11,20 +11,28 @@ Each rancher environment is segregated at network level via Docker Overlay and I
 
 Only trusted ops can connect to the machines, unix accounts are managed by ansible.
 
-Developpers will not be allowed to access rancher by itself, rancher master will be accessible only for ops for the moment.
 End users will have tools in their project to see their application logs & metrics (elk, prometheus).
 
 ### Machine requirements
 
-At the moment this set of playbooks is designed to be run on ubuntu. We recommend using latest LTS (16.04 at times of writing).
+At the moment this set of playbooks is designed to be run on **ubuntu**. We recommend using latest LTS (16.04 at times of writing).
 
 Each host (including the master) must have at least the following requirements :
 * 2 vcpu
 * 4 Go ram
 * 2 disks with one for the system with 12Go (8Go for / + 4Go for swap) and one for /var/lib/docker with 8Go.
 
-Note that by default we will only install docker on the machine, so the root filesystem doesn't needs to be big (just system logs and the base packages).
-Docker will have it's own partition and everything will run inside containers, so if at some point you need more space you need to extends docker partition (see above)
+*Note that by default we will only install docker on the machine, so the root filesystem doesn't needs to be big (just system logs and the base packages).
+Docker will have it's own partition and everything will run inside containers, so if at some point you need more space you need to extends docker partition (see above)*
+
+### Versions
+#### Defined into configuration
+* rancher/server:v1.6.5
+* rancher/agent:v1.2.5
+* rancher-compose-v0.12.5
+* docker: 1.12.6
+* dockerpy: 1.8.1
+
 
 ### Exemple for test environments
 
@@ -32,11 +40,22 @@ Docker will have it's own partition and everything will run inside containers, s
 * one for tools (elk, prometheus, janitor) and the load balancer
 * one for project
 
-Ideally we should provide a secured jenkins for the project with a sample of pipeline to deploy across all environments.
 The machine for tools will be identified with specific label on it (role=tools).
 
-## Vagrant
+### Vagrant
 
+If you use proxy, you need to install vagrant plugin :
+```
+vagrant plugin install vagrant-proxyconf
+```
+To create all node  
+```
+vagrant up
+```
+To create specific node  (Ex: Master)
+```
+vagrant up master
+```
 
 ## Playbooks documentation
 
@@ -54,11 +73,12 @@ The machine for tools will be identified with specific label on it (role=tools).
 #### Principal Playbooks
 * run configure_host playbook
 * run create_master playbook
+* run create_master_tools playbook
 * run create_project playbook (everytime you need to setup a new env)
 
 
 ### Configure the Machine
-Use the configure_host.yml
+Launch the playbook
 
 You can bootstrap the machine for the first time with the following command :
 
@@ -79,26 +99,18 @@ This ansible install
 * Python
 * Docker
 * Create local user with ssh_key, put into the group ADM,SUDO and set the password
-* Set machine hostname
-* *(Configure ssh (disable root login, enforce auth by key)*
+* *Set machine hostname* Disabled
+* *(Configure ssh (disable root login, enforce auth by key)* Disabled
 * Remove the former ops account
 
-Docker will be installed in /var/lib/docker folder with a lvm partition by default it will create it on /dev/sdb but you can configure it in you inventory file by overriding docker_disks variable.
+*Docker will be installed in /var/lib/docker folder with a lvm partition by default it will create it on /dev/sdb but you can configure it in you inventory file by overriding docker_disks variable.
 ```
 mymachine docker_disks="/dev/sdb,/dev/sdc"
 ```
-Note that the playbook will auto extends to 100% of the volume group the /var/lib/docker. So if in future you're out of space on docker partition just override that property and rerun the playbook.
+Note that the playbook will auto extends to 100% of the volume group the /var/lib/docker. So if in future you're out of space on docker partition just override that property and rerun the playbook.*
 
 
 ###  Create a Master
-
-Create a tag for the new Master, for example
-```
-[rancher-masters]
-host-1
-```
-
-Configure the create_master.yml for [rancher-masters]
 
 Launch the playbook
 ```
@@ -107,35 +119,44 @@ Launch the playbook
 
 This playbook will create a file apiKey in {{ inventory_dir }}/group_vars/all/apikey. This file contains the RANCHER_API_KEY_ACCOUNT_TOKEN and RANCHER_API_KEY_ACCOUNT_SECRET
 
-### Create a project
+### Create a master tools
 
-Create a tag for your project into the inventory for example
-```
-[my-first-rancher-project]
-host-2
-host-3
-```
-
-The first host of the tag will become the "tools" host (running elk, etc...).
+The host in tools group will become the "tools" host for monitoring the rancher cluster (running elk, prométheus, grafana)
 
 Launch the playbook
 ```
-./ansible-playbook create_project.yml -i path/to/inventory -e "NAME_PROJECT=MyFirstProject"
+./ansible-playbook create_master_tools.yml -i path/to/inventory
 ```
+
+### Create a project
+
+The first host of the tag will become the "tools" host for the project
+You can install elk, prometheus, garfana, janitor if you tag "common_stack_enabled: true" in group_vars/vars
+
+Launch the playbook
+```
+./ansible-playbook create_project.yml -i path/to/inventory -e "NAME_PROJECT=MyFirstProject" -e "TYPE_PROJECT=cattle"
+```
+
+Tree type of project is possible :
+* cattle (By Rancher)
+* mesos
+* kubernetes
+
 
 This ansible create :
 
 * A project into RANCHER
 * Create "API KEY ENVIRONMENT" into rancher and write into group_vars/{{NAME_PROJECT}}
 * Add Host into the project
-* Install common stacks : Elk, Prometheus, Janitor and load balancer configuration
+* Install common stacks : Elk, Prometheus, Janitor and load balancer configuration if you have tag "common_stack_enabled: true"
 
 
 ### Add Host to a project
 
-Launch the playbook utils_add_host_to_project.yml with the good hosts.
+Launch the playbook utils_add_host_to_project.yml with the good project and playbook install all of node defined into the group_vars in inventory.
 ```
-./ansible-playbook_wrapper utils_add_host_to_project.yml -K -e "NAME_PROJECT=my-first-rancher-project"
+./ansible-playbook_wrapper utils_add_host_to_project.yml -e "NAME_PROJECT=myproject"
 ```
 
 The playbook will launch on each host the agent Rancher with the good configuration.
@@ -150,21 +171,6 @@ To delete all hosts in a project run the playbook utils_add_registry.yml
 To delete one host in a project run the following command
 ```
 ./ansible-playbook_wrapper utils_clean_host.yml -K -e "NAME_PROJECT=myproject" -e "NAME_HOST=myHost
-```
-
-## Ansible Wrappers are given to exploit Rancher platforms on production
-
-Each rancher platform will have it's own configuration (inventory + group_vars + hosts_vars). For exemple you can duplicate "vagrant" folder.
-
-WARNING : By default wrappers will use **production** one.
-
-But you can use other ones changing inventory from the command line (everything is relative to the path of the inventory file).
-
-
-Exemple:
-```
-./ansible-playbook_wrapper configure_host.yml -K
-
 ```
 
 ## Deployments
@@ -203,16 +209,6 @@ withEnv(['RANCHER_COMPOSE_HOME=/usr/lib/rancher-compose', 'RANCHER_URL=http://ra
 }
 ```
 
-## Rancher catalog
-
-Rancher offer a capability to write our own catalog (stacks ready to use). This can be useful if we want to provide some stuff for projects (exemple : mongodb + mongo ui + backups)
-To create a catalog you just need to have a git repository with a templates folder containing a simple structure with docker-compose and rancher-compose files.
-
-To register a catalog go to rancher-ui and go to admin/settings and add your catalog in the related section. The url should be something like https://user:token@your-git-repo.git
-
-For more documentation on this topic check http://docs.rancher.com/rancher/latest/en/catalog/
-
-To see our current catalog check https://github.com/AdopteUnOps/rancher-catalog
 
 ## Troubleshooting
 
@@ -278,11 +274,6 @@ rm -rf /var/lib/mysql/*
 sudo service docker start
 ```
 
-### Make sure master is configured properly
-```
-./ansible-playbook_wrapper create_master.yml -K
-```
-
 ### Restore mysql
 
 On the master enter into the container itself and run the restore script
@@ -301,7 +292,7 @@ ID_BUCKET_RESTORE=2016-07-21T133544Z.dump.sql.gz ./restore.sh
 ## Upgrading rancher
 
 To upgrade rancher you just need to change the rancher_version version in group vars.
-Exemple: in production/group_vars/all/vars
+Exemple: in production/group_vars/all/rancher-config
 ```
 rancher_version: v1.1.1
 ```
@@ -319,18 +310,3 @@ If you want to set this version to all rancher platforms, just update it in role
 If you want to set this version only for a particular rancher platform, add this variable in your group_vars/all/vars file.
 
 Then run again the configure_host.yml playbook. Note that you will get downtime if your application containers are not resilient as docker will be restarted.
-
-### Docker version caveats
-
-WARNING: At the moment we use docker 1.10.3 which is not available for ubuntu-xenial.
-This was required to deploy gluster fs with convoy as there is a bug right now on docker 1.11 see https://github.com/rancher/rancher/issues/4411
-
-The docker version is currently configured in roles/docker/defaults/main.yml and we force the distribution name to wily to have access to the docker repository containing 1.10.3.
-To make sure ansible does try to discover ubuntu version on hosts itself we have disabled gather_facts in configure_host.yml:
-```
-- hosts: all
-  #remove this when the glusterfs bug will be fixed
-  gather_facts: no
-```
-
-We highly recommend to upgrade to docker 1.11 or higher (if supported by rancher) when this bug will be fixed.
