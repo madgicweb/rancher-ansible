@@ -1,6 +1,6 @@
 ---
 - name: Verify if project exists
-  stat: path="{{ inventory_dir }}/group_vars/{{ NAME_PROJECT }}"
+  stat: path="{{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}"
   register: project_file
   delegate_to: localhost
 
@@ -27,9 +27,9 @@
   when: project_file.stat.exists == False
 
 - name: generate project configuration
-  template:  src=files/rancher_project_key.j2 dest={{ inventory_dir }}/group_vars/{{ NAME_PROJECT }}
+  template:  src=files/rancher_project_key.j2 dest={{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}
   when: project_file.stat.exists == False
   delegate_to: localhost
 
-- debug: msg="Project apikey generated. You can now vault it with './ansible-vault_wrapper {{ inventory_dir }}/group_vars/{{ NAME_PROJECT }}'"
+- debug: msg="Project apikey generated. You can now vault it with './ansible-vault_wrapper {{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}'"
   when: project_file.stat.exists == False
