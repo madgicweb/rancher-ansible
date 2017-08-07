@@ -3,7 +3,7 @@
 - hosts: "{{ NAME_HOST }}"
   gather_facts: no
   tasks:
-  - include_vars: "{{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}"
+  - include_vars: "{{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}.projectkey"
   - name: Return the registration token URL of Rancher server
     action: uri
          method=POST

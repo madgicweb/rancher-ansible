@@ -1,6 +1,6 @@
 ---
 #Delete host Rancher
-- include_vars: "{{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}"
+- include_vars: "{{ inventory_dir }}/group_vars/projects/{{ NAME_PROJECT }}.projectkey"
 
 - name: Get all Host from a project
   uri:
