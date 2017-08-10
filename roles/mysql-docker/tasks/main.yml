@@ -15,9 +15,9 @@
         MYSQL_USER="{{ mysql_user }}"
         MYSQL_PASSWORD="{{ mysql_password }}"
         MYSQL_DATABASE="{{ mysql_database }}"
-  become: yes
 
 - name: Create mysql backup
+  become: yes
   docker:
     name: mysql-backup-s3
     image: schickling/postgres-backup-s3
@@ -32,5 +32,4 @@
       MYSQL_USER=root
       MYSQL_PASSWORD={{ mysql_root_password }}
       MYSQL_HOST={{ mysql_host }}
-  become: yes
   when: mysql_backup_enabled == True
