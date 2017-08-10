@@ -9,3 +9,7 @@
   gather_facts: no
   roles:
   - {role: add-host-to-environment, tags: add-host-to-environment}
+  - {role: install-stack, STACK_NAME: janitor, tags: install-stack, when: common_stack_enabled}
+  - {role: install-stack, STACK_NAME: elk, tags: install-stack, when: common_stack_enabled}
+  - {role: install-stack, STACK_NAME: prometheus, tags: install-stack, when: common_stack_enabled}
+  
