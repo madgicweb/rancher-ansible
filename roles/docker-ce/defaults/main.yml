@@ -1,0 +1,28 @@
+---
+# Edition can be one of: 'ce' (Community Edition) or 'ee' (Enterprise Edition).
+docker_edition: 'ce'
+docker_package: "docker-{{ docker_edition }}"
+
+# Docker Compose options.
+docker_install_compose: false
+docker_compose_version: "1.13.0"
+docker_compose_path: /usr/local/bin/docker-compose
+
+# Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
+docker_apt_release_channel: stable
+docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}"
+
+# Used only for RedHat/CentOS.
+docker_yum_repo_url: https://download.docker.com/linux/centos/docker-{{ docker_edition }}.repo
+docker_yum_repo_enable_edge: 0
+docker_yum_repo_enable_test: 0
+
+
+# Override default systemd ExecStart
+# More info at https://docs.docker.com/engine/admin/systemd/
+docker_override_options: "{{proxy_env_enabled | default('false') }}"
+docker_override_path: /etc/systemd/system/docker.service.d
+docker_daemon_options: "-H fd://"
+docker_override_http_proxy: "{{ proxy_env['http_proxy'] }}"
+docker_override_https_proxy: "{{ proxy_env['https_proxy']}}"
+docker_override_no_proxy: "{{ proxy_env['no_proxy'] }}"
